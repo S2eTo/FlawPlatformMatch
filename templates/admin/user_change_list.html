@@ -1,0 +1,21 @@
+{% extends "admin/change_list.html" %}
+{% load admin_list %}
+
+{% block object-tools %}
+    <ul class="object-tools">
+        {% block object-tools-items %}
+            {% change_list_object_tools %}
+        {% endblock %}
+        {% if has_add_permission %}
+            <li>
+                <a href="{% url 'admin:import_user_from_excel' %}" class="addlink">批量导入 {{ opts.verbose_name }} 信息</a>
+            </li>
+            <li>
+                <a href="{% url 'admin:export_achievement' %}">导出比赛结果</a>
+            </li>
+            <li>
+                <a href="{% url 'admin:clear_ordinary_user' %}" style="color: #fff;background: var(--delete-button-bg);">清空 {{ opts.verbose_name }} </a>
+            </li>
+        {% endif %}
+    </ul>
+{% endblock %}

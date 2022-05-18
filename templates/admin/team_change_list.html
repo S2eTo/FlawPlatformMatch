@@ -1,0 +1,15 @@
+{% extends "admin/change_list.html" %}
+{% load admin_list %}
+
+{% block object-tools %}
+    <ul class="object-tools">
+        {% block object-tools-items %}
+            {% change_list_object_tools %}
+        {% endblock %}
+        {% if has_add_permission %}
+            <li>
+                <a href="{% url 'admin:export_user_to_excel' %}" target="_blank">导出 {{ opts.verbose_name }} 成绩</a>
+            </li>
+        {% endif %}
+    </ul>
+{% endblock %}

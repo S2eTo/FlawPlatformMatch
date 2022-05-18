@@ -1,0 +1,204 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block extrahead %}{{ block.super }}
+<script src="{% url 'admin:jsi18n' %}"></script>
+{{ media }}
+{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+    <style>
+        #id_expose {
+            display: none;
+        }
+
+        #id_image_tags {
+            display: none;
+        }
+    </style>
+{% endblock %}
+
+
+{% block coltype %}colM{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form{% endblock %}
+
+{% if not is_popup %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+&rsaquo; {% if has_view_permission %}<a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>{% else %}{{ opts.verbose_name_plural|capfirst }}{% endif %}
+&rsaquo; {% if add %}{% blocktranslate with name=opts.verbose_name %}Add {{ name }}{% endblocktranslate %}{% else %}{{ original|truncatewords:"18" }}{% endif %}
+</div>
+{% endblock %}
+{% endif %}
+
+{% block content %}<div id="content-main">
+{% block object-tools %}
+{% if change %}{% if not is_popup %}
+  <ul class="object-tools">
+    {% block object-tools-items %}
+      {% change_form_object_tools %}
+    {% endblock %}
+  </ul>
+{% endif %}{% endif %}
+{% endblock %}
+<form {% if has_file_field %}enctype="multipart/form-data" {% endif %}{% if form_url %}action="{{ form_url }}" {% endif %}method="post" id="{{ opts.model_name }}_form" novalidate>{% csrf_token %}{% block form_top %}{% endblock %}
+<div id="f">
+{% if is_popup %}<input type="hidden" name="{{ is_popup_var }}" value="1">{% endif %}
+{% if to_field %}<input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}">{% endif %}
+{% if save_on_top %}{% block submit_buttons_top %}{% submit_row %}{% endblock %}{% endif %}
+{% if errors %}
+    <p class="errornote">
+    {% if errors|length == 1 %}{% translate "Please correct the error below." %}{% else %}{% translate "Please correct the errors below." %}{% endif %}
+    </p>
+    {{ adminform.form.non_field_errors }}
+{% endif %}
+
+{% block field_sets %}
+{% for fieldset in adminform %}
+  {% include "admin/includes/fieldset.html" %}
+{% endfor %}
+{% endblock %}
+
+{% block after_field_sets %}{% endblock %}
+
+{% block inline_field_sets %}
+{% for inline_admin_formset in inline_admin_formsets %}
+    {% include inline_admin_formset.opts.template %}
+{% endfor %}
+{% endblock %}
+
+{% block after_related_objects %}{% endblock %}
+
+{% block submit_buttons_bottom %}{% submit_row %}{% endblock %}
+
+{% block admin_change_form_document_ready %}
+    <script id="django-admin-form-add-constants"
+            src="{% static 'admin/js/change_form.js' %}"
+            {% if adminform and add %}
+                data-model-name="{{ opts.model_name }}"
+            {% endif %}
+            async>
+    </script>
+{% endblock %}
+
+{# JavaScript for prepopulated fields #}
+{% prepopulated_fields_js %}
+
+</div>
+</form>
+</div>
+    <script type="application/javascript" charset="UTF-8">
+        let image_dev = document.querySelector('.module.aligned.image_dev');
+        let file_dev = document.querySelector('.module.aligned.file_dev');
+        let flag_file_path = document.querySelector('.form-row.field-flag_file_path');
+        flag_file_path.remove();
+        let flag_file_format = document.querySelector('.form-row.field-flag_file_format');
+        flag_file_format.remove();
+
+        let value = document.querySelector('.form-row.field-check_flag .readonly').innerText;
+        document.querySelector('.module.aligned.dev').remove();
+
+        if(value === '镜像环境') {
+            let form = document.getElementById('f');
+            form.insertBefore(image_dev, document.querySelector('.module.aligned.info'));
+
+            file_dev.remove();
+
+        }else if(value === '附件环境') {
+            let form = document.getElementById('f');
+            form.insertBefore(file_dev, document.querySelector('.module.aligned.info'));
+
+            image_dev.remove();
+            document.querySelector('.form-row.field-file_flag').remove();
+        }
+
+        function create_read_only_field(parent, content) {
+            let readonly = parent.querySelector('.readonly');
+            if (readonly != null) {
+                readonly.innerText = content
+                return
+            }
+            let div = document.createElement('div')
+            div.className = 'readonly'
+            div.innerText = content;
+
+            parent.insertBefore( div, parent.querySelector('div.help') );
+        }
+
+        if (document.getElementById('id_image_id').value != '') {
+            check_image_id(document.getElementById('id_image_id').value.trim());
+        }
+
+        document.getElementById('id_image_id').onchange = function (e) {
+            let image_id = e.target.value.trim();
+            image_id?check_image_id(image_id):"";
+        }
+
+        function check_image_id(id) {
+            var xmlhttp;
+            if (window.XMLHttpRequest)
+            {
+                //  IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+                xmlhttp=new XMLHttpRequest();
+            }
+            else
+            {
+                // IE6, IE5 浏览器执行代码
+                xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            xmlhttp.onreadystatechange=function()
+            {
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
+                {
+                    let json_response = JSON.parse(xmlhttp.response)
+
+                    let expose_ports_arr = []
+                    for (let key in json_response.data.expose_ports) {
+                        expose_ports_arr.push(key)
+                    }
+
+
+                    if (expose_ports_arr.length > 0) {
+                        create_read_only_field(document.querySelector('.form-row.field-expose div'),
+                            expose_ports_arr.join(', '))
+
+                        document.getElementById("id_expose").value = expose_ports_arr.join(', ')
+                    }else {
+                        create_read_only_field(document.querySelector('.form-row.field-expose div'),
+                            "无暴露端口, 请检查镜像配置！")
+                    }
+
+                    create_read_only_field(document.querySelector('.form-row.field-image_tags div'),
+                        json_response.data.tags.join(', '))
+
+                    document.getElementById("id_image_tags").value = json_response.data.tags.join(', ')
+
+                }else if(xmlhttp.status == 404) {
+                    document.getElementById("id_expose").value = null
+                    document.getElementById("id_image_tags").value = null
+
+                    create_read_only_field(document.querySelector('.form-row.field-expose div'),
+                        "获取镜像暴露端口失败, 请检查 ID 是否正确")
+
+                    create_read_only_field(document.querySelector('.form-row.field-image_tags div'),
+                        "获取镜像标签(名称)失败, 请检查 ID 是否正确")
+                }else {
+                    document.getElementById("id_expose").value = null
+                    document.getElementById("id_image_tags").value = null
+
+                    create_read_only_field(document.querySelector('.form-row.field-expose div'),
+                        "获取错误！")
+
+                    create_read_only_field(document.querySelector('.form-row.field-image_tags div'),
+                        "获取错误！")
+                }
+            }
+            xmlhttp.open("GET","/docker/get_image?format=json&id=" + id,true);
+            xmlhttp.send();
+        }
+    </script>
+{% endblock %}
