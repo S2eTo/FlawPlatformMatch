@@ -114,7 +114,7 @@ class ImageAdmin(admin.ModelAdmin):
     list_display = ('name', 'check_flag', 'source', 'category', 'status', 'change_status_field')
     list_filter = ('check_flag', 'category', 'status', 'create_time', 'update_time')
     search_fields = ('name', 'image_id', 'description', 'source')
-    filter_horizontal = ('top_user', )
+    # filter_horizontal = ('top_user', )
     list_per_page = 10
 
     def change_status_field(self, obj: Image):
@@ -258,7 +258,7 @@ class ImageAdmin(admin.ModelAdmin):
         # if obj is None:
         #     self.readonly_fields = ()
         # else:
-        self.readonly_fields = ('create_time', 'update_time')
+        self.readonly_fields = ('done_count', 'top_user', 'create_time', 'update_time')
         return self.readonly_fields
 
 
