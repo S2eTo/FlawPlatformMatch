@@ -287,6 +287,22 @@ class Checked(BaseModels):
         super(Checked, self).save(*args, **kwargs)
 
 
+class Hints(BaseModels):
+    content = models.CharField(max_length=200, blank=True, help_text="提示内容，最长 200 个字符", verbose_name="提示")
+    status = models.BooleanField(choices=(
+        (False, "未发布"),
+        (True, "发布"),
+    ), default=False, verbose_name="状态")
+    image = models.ForeignKey(to=Image, on_delete=models.CASCADE, verbose_name="题目")
+
+    class Meta:
+        verbose_name = "题目 Hints"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return f"{self.image.name} 题目 Hints {self.id}"
+
+
 def delete_container(container_id, job_id):
     """
     直接删除镜像(题目) 后删除响应的容器

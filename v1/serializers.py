@@ -1,15 +1,19 @@
 from rest_framework import serializers
 
 from users.models import User, Notice, Match
-from dockerapi.models import Image, Container, Checked, Category
+from dockerapi.models import Image, Container, Checked, Category, Hints
 
 
 class ImagesSerializer(serializers.ModelSerializer):
     category = serializers.SerializerMethodField()
     top_user = serializers.SerializerMethodField()
+    hints = serializers.SerializerMethodField()
 
     def get_category(self, obj: Image):
         return obj.category.name
+
+    def get_hints(self, obj: Image):
+        return Hints.objects.filter(image=obj, status=True).values("id", "content")
 
     def get_top_user(self, obj: Image):
         sl = ", "
@@ -18,7 +22,7 @@ class ImagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
         fields = ['id', 'check_flag', 'file', 'name', 'source', 'description', 'point', 'category',
-                  'done_count', 'top_user']
+                  'done_count', 'top_user', 'hints']
 
 
 class ContainerSerializer(serializers.ModelSerializer):

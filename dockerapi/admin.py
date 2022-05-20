@@ -11,7 +11,7 @@ from django.http.response import HttpResponse, HttpResponseRedirect
 from dockerapi.api import docker_api
 from ws.dispatcher import dispatcher
 from users.models import Notice, Match
-from dockerapi.models import Image, Container, Checked, Category
+from dockerapi.models import Image, Container, Checked, Category, Hints
 
 
 class ContainerCreationForm(forms.ModelForm):
@@ -126,6 +126,8 @@ class ImageAdmin(admin.ModelAdmin):
         return format_html('<a href="{}" class="deletelink">紧急下架题目</a>',
                            reverse('admin:off_release_task', kwargs={'id': obj.id}))
 
+    change_status_field.short_description = "操作"
+
     def get_urls(self):
 
         return [
@@ -140,8 +142,6 @@ class ImageAdmin(admin.ModelAdmin):
                        name='off_release_task',
                    ),
                ] + super(ImageAdmin, self).get_urls()
-
-    change_status_field.short_description = "操作"
 
     def release(self, request, id, form_url=''):
 
@@ -298,3 +298,29 @@ class CategoryAdmin(admin.ModelAdmin):
     list_filter = ('create_time', 'update_time')
     search_fields = ('name',)
     list_per_page = 10
+
+
+@admin.register(Hints)
+class HintsAdmin(admin.ModelAdmin):
+    fields = ('content', 'image')
+    list_display = ('content', 'image', 'status', 'create_time', 'update_time')
+    list_editable = ('status',)
+    list_filter = ('status', 'create_time', 'update_time')
+    search_fields = ('content', 'image')
+    list_per_page = 10
+
+    def save_model(self, request, obj, form, change):
+        if 'status' in form.changed_data:
+            status = form.cleaned_data.get('status')
+            notice = Notice()
+            notice.content = f"题目 《{obj.image.name}》 {'有新提示发布' if status else '有提示被关闭'}了."
+            notice.save()
+
+        dispatcher.send_all({
+            'type': 'update_task_hints', 'data': {
+                "category": obj.image.category.id,
+                "image": obj.image.id,
+            }
+        })
+
+        super(HintsAdmin, self).save_model(request, obj, form, change)

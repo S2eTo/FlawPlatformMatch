@@ -32,7 +32,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 
 from users.forms import ImportUserForm
 from users.models import User, Notice, Match, UserToken
-from dockerapi.models import Image, Container, Checked, Category
+from dockerapi.models import Image, Container, Checked, Category, Hints
 
 csrf_protect_m = method_decorator(csrf_protect)
 sensitive_post_parameters_m = method_decorator(sensitive_post_parameters())
@@ -466,6 +466,9 @@ class MatchAdmin(admin.ModelAdmin):
             with transaction.atomic(using=router.db_for_write(self.model)):
                 users = User.objects.all()
                 users.update(**{"point": 0})
+
+                # 关闭所有提示
+                Hints.objects.all().update(status=False)
 
                 # 删除所有答题记录
                 Checked.objects.all().delete()
