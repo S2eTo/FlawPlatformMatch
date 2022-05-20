@@ -122,7 +122,7 @@ class UserAdmin(admin.ModelAdmin):
         if not self.has_add_permission(request):
             raise PermissionDenied
 
-        if request.method == 'POST' and request.POST.get('post'):
+        if request.method == 'POST':
             form = ImportUserForm(request.POST, request.FILES)
             if form.is_valid():
                 file = form.cleaned_data.get('excel_file')
