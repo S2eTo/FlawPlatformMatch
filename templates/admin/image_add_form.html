@@ -138,6 +138,19 @@
             image_id ? check_image_id(image_id) : "";
         }
 
+        function create_read_only_field(parent, content) {
+            let readonly = parent.querySelector('.readonly');
+            if (readonly != null) {
+                readonly.innerText = content
+                return
+            }
+            let div = document.createElement('div')
+            div.className = 'readonly'
+            div.innerText = content;
+
+            parent.insertBefore( div, parent.querySelector('div.help') );
+        }
+
         function check_image_id(id) {
             var xmlhttp;
             if (window.XMLHttpRequest) {

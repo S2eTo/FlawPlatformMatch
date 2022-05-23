@@ -100,29 +100,34 @@
         </form>
     </div>
     <script type="application/javascript" charset="UTF-8">
+        // 镜像环境信息
         let image_dev = document.querySelector('.module.aligned.image_dev');
-        let file_dev = document.querySelector('.module.aligned.file_dev');
+
+        // 镜像环境信息 - 镜像 FLAG 样式
+        let flag_style = document.querySelector('.module.aligned.flag_style');
+
+        // 镜像环境信息 - 镜像 FLAG 样式 - 文件路径
         let flag_file_path = document.querySelector('.form-row.field-flag_file_path');
-        flag_file_path.remove();
+
+        // 镜像环境信息 - 镜像 FLAG 样式 - 文件内容模板
         let flag_file_format = document.querySelector('.form-row.field-flag_file_format');
-        flag_file_format.remove();
 
-        let value = document.querySelector('.form-row.field-check_flag .readonly').innerText;
-        document.querySelector('.module.aligned.dev').remove();
+        let fixed_flag = document.querySelector('.form-row.field-fixed_flag');
+        // 附件环境信息
+        let file_dev = document.querySelector('.module.aligned.file_dev');
 
-        if (value === '镜像环境') {
-            let form = document.getElementById('f');
-            form.insertBefore(image_dev, document.querySelector('.module.aligned.info'));
+        new SelectChangeDisplay(
+            document.getElementById("id_check_flag"),
+            new SelectOption("1", [image_dev, flag_style], [file_dev]),
+            new SelectOption("2", [file_dev], [image_dev, flag_style]),
+        );
 
-            file_dev.remove();
-
-        } else if (value === '附件环境') {
-            let form = document.getElementById('f');
-            form.insertBefore(file_dev, document.querySelector('.module.aligned.info'));
-
-            image_dev.remove();
-            document.querySelector('.form-row.field-file_flag').remove();
-        }
+        new SelectChangeDisplay(
+            document.getElementById("id_image_flag_style"),
+            new SelectOption("1", [], [fixed_flag, flag_file_path, flag_file_format]),
+            new SelectOption("2", [flag_file_path, flag_file_format], [fixed_flag]),
+            new SelectOption("3", [fixed_flag], [flag_file_path, flag_file_format]),
+        );
 
         function create_read_only_field(parent, content) {
             let readonly = parent.querySelector('.readonly');
