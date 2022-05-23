@@ -136,7 +136,7 @@ class UserAdmin(admin.ModelAdmin):
                 for chunk in file.chunks():
                     f.write(chunk)
                 f.close()
-                # try:
+
                 data = xlrd.open_workbook(filename, encoding_override='utf-8')
                 sheet_name = data.sheet_names()[0]
                 table_name = data.sheet_by_name(sheet_name)
@@ -149,8 +149,18 @@ class UserAdmin(admin.ModelAdmin):
                         for i in range(1, nrows):
                             sheet_row_val = table_name.row_values(i)
 
-                            password = generate_rand_str()
                             username = int(sheet_row_val[2])
+
+                            # 是否随机生成密码
+                            if int(form.cleaned_data.get("password_type")) == 1:
+                                password = form.cleaned_data.get("password")
+                            elif int(form.cleaned_data.get("password_type")) == 2:
+                                password = generate_rand_str()
+
+                                users_info.append({
+                                    "username": username,
+                                    "password": password
+                                })
 
                             user1: User = User()
                             user1.set_password(password)
@@ -159,22 +169,18 @@ class UserAdmin(admin.ModelAdmin):
                             user1.classes = sheet_row_val[1]
                             user1.save()
 
-                            users_info.append({
-                                "username": username,
-                                "password": password
-                            })
-
                 except django.db.utils.IntegrityError as e:
-                    form.add_error('excel_file', '位于行: {}, 存在重复的学号: {}'.format(i + 1, username))
+                    form.add_error('excel_file', '位于行: {}, 存在重复的: {}'.format(i + 1, username))
                     users_info.clear()
 
                 os.remove(filename)
 
                 if form.is_valid():
-                    # 用户名密码写入文件
-                    f = open(os.path.join(settings.BASE_DIR, 'excel', "password.json"), 'wb')
-                    f.write(json.dumps(users_info).encode())
-                    f.close()
+                    if int(form.cleaned_data.get("password_type")) == 2:
+                        # 用户名密码写入文件
+                        f = open(os.path.join(settings.BASE_DIR, 'excel', "password.json"), 'wb')
+                        f.write(json.dumps(users_info).encode())
+                        f.close()
 
                     messages.success(request, '导入成功')
 
@@ -514,16 +520,15 @@ class MatchAdmin(admin.ModelAdmin):
 @admin.register(UserToken)
 class UserTokenAdmin(admin.ModelAdmin):
     list_display = ('user', 'token', 'ip', 'status', 'create_time', 'update_time')
-    list_editable = ('status', )
+    list_editable = ('status',)
     readonly_fields = ('user', 'token', 'create_time', 'update_time', 'colored_name', 'ip')
-    search_fields = ('user__username', )
+    search_fields = ('user__username',)
     list_filter = ('create_time', 'update_time')
 
     fields = ('user', 'token', 'colored_name', 'ip', 'create_time', 'update_time')
 
     def has_add_permission(self, request):
         return False
-
 
 # @admin.register(UserRequestHistory)
 # class UserRequestHistoryAdmin(admin.ModelAdmin):
@@ -536,4 +541,3 @@ class UserTokenAdmin(admin.ModelAdmin):
 #
 #     def has_change_permission(self, request, obj=None):
 #         return False
-

@@ -1,5 +1,6 @@
 from django import forms
 
+from django.core import validators
 from django.core.exceptions import ValidationError
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import UsernameField
@@ -23,7 +24,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ("username", )
+        fields = ("username",)
         field_classes = {'username': UsernameField}
 
     def __init__(self, *args, **kwargs):
@@ -67,12 +68,16 @@ class ImportUserForm(forms.Form):
 
     error_messages = {
         'file_extension': "只能上传 excel (.xls )文件",
+        'null_password': "初始化密码不能为空。",
     }
     required_css_class = 'required'
     excel_file = forms.FileField(
         label="文件",
-        help_text="选择报名信息表进行导入, 导入信息时间可能比较长，请耐心等待出现完成导入提示。",
+        help_text="选择报名信息表进行导入, 导入信息时间可能比较长，请耐心等待出现完成导入提示。目前尚不支持动态字段，默认: 姓名、班级、学号",
     )
+    password_type = forms.ChoiceField(choices=((1, "固定密码"), (2, "随机密码")), label="默认密码",
+                                      help_text="设置导入后使用随机密码或固定密码。", initial=1)
+    password = forms.CharField(label="初始密码", initial="123456", required=False)
 
     def clean_excel_file(self):
         excel_file = self.cleaned_data.get('excel_file')
@@ -84,5 +89,18 @@ class ImportUserForm(forms.Form):
                 self.error_messages['file_extension'],
                 code='file_extension',
             )
-        
+
         return excel_file
+
+    def clean_password(self):
+        password_type = self.cleaned_data.get('password_type')
+        password = self.cleaned_data.get('password')
+
+        if int(password_type) == 1:
+            if password in list(validators.EMPTY_VALUES) or password is None:
+                raise ValidationError(
+                    self.error_messages['null_password'],
+                    code='null_password',
+                )
+
+        return password

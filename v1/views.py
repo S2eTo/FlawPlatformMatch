@@ -9,15 +9,15 @@ from django.db.models import F, Window
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm, AdminPasswordChangeForm
 
-from common.calculator import Calculator
 from ws.dispatcher import dispatcher
+from common.decorators import validate
+from common.calculator import Calculator
 from dockerapi.models import (
     Image, Container, Checked, Category
 )
 from users.models import (
     User, EmailToken, Notice, Match, UserToken
 )
-from common.decorators import validate
 from common.views import (
     UserAPIView, AnonymousAPIView, AdministratorAPIView, CheckGetPermissionsAPIView, CheckPostPermissionsAPIView
 )
@@ -410,7 +410,6 @@ class RankDetailed(AdministratorAPIView, CheckGetPermissionsAPIView):
     """
 
     def get(self, request):
-
         # 获取排名
         rank_result = User.objects.exclude(is_superuser=True).annotate(
             rank=Window(
