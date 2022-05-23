@@ -76,7 +76,8 @@ class ImportUserForm(forms.Form):
         help_text="选择报名信息表进行导入, 导入信息时间可能比较长，请耐心等待出现完成导入提示。目前尚不支持动态字段，默认: 姓名、班级、学号",
     )
     password_type = forms.ChoiceField(choices=((1, "固定密码"), (2, "随机密码")), label="默认密码",
-                                      help_text="设置导入后使用随机密码或固定密码。", initial=1)
+                                      help_text="设置导入后使用随机密码或固定密码，随机密码会在 excel 目录下生成 password.json 文件保存用户名密码信息",
+                                      initial=1)
     password = forms.CharField(label="初始密码", initial="123456", required=False)
 
     def clean_excel_file(self):
