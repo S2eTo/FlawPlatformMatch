@@ -7,7 +7,8 @@
             {% change_list_object_tools %}
         {% endblock %}
         <li>
-            <a href="{% url 'admin:reset_match' %}" style="color: #fff;background: var(--delete-button-bg);">重置 {{ opts.verbose_name }}</a>
+            <a href="{% url 'admin:reset_match' %}"
+               style="color: #fff;background: var(--delete-button-bg);">重置 {{ opts.verbose_name }}</a>
         </li>
     </ul>
 {% endblock %}

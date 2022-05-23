@@ -14,7 +14,8 @@
                 <a href="{% url 'admin:export_achievement' %}">导出比赛结果</a>
             </li>
             <li>
-                <a href="{% url 'admin:clear_ordinary_user' %}" style="color: #fff;background: var(--delete-button-bg);">清空 {{ opts.verbose_name }} </a>
+                <a href="{% url 'admin:clear_ordinary_user' %}"
+                   style="color: #fff;background: var(--delete-button-bg);">清空 {{ opts.verbose_name }} </a>
             </li>
         {% endif %}
     </ul>
