@@ -22,9 +22,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = utils.get_random_secret_key()
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
@@ -140,8 +137,6 @@ REST_FRAMEWORK = {
     ),
 }
 
-RECORD_LOGIN = True
-
 DOCKER_API = {
     'URL': 'tcp://0.0.0.0:2375',
     # 外部映射地址, 只起到显示作用
@@ -166,12 +161,36 @@ CHALLENGE = {
     "HALF_LIFE": 10
 }
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.0/howto/static-files/
+# 根据 Debug 调整某些配置方便调试。
+if DEBUG:
+    # Debug = True 开启 Debug 时使用固定的 SECRET_KEY 方便开发
+    # 修改静态文件方便调试
 
-STATIC_URL = 'static/'
+    # SECURITY WARNING: keep the secret key used in production secret!
+    SECRET_KEY = "ste5n9+j_-aui@%q1^x9#7@^w%jgp)#85@%u&5se0g+enb6tc6"
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+    # Static files (CSS, JavaScript, Images)
+    # https://docs.djangoproject.com/en/4.0/howto/static-files/
+    STATIC_URL = '/static/'
+    # 列表或者元组都行
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, 'static'),
+    ]
+
+    # 是否记录登录 IP 并限制登录次数，开启后无法重新登录，需要在后台将登录标识设置为失效。
+    RECORD_LOGIN = False
+
+else:
+    # SECURITY WARNING: keep the secret key used in production secret!
+    SECRET_KEY = utils.get_random_secret_key()
+
+    # Static files (CSS, JavaScript, Images)
+    # https://docs.djangoproject.com/en/4.0/howto/static-files/
+    STATIC_URL = 'static/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+    # 是否记录登录 IP 并限制登录次数，开启后无法重新登录，需要在后台将登录标识设置为失效
+    RECORD_LOGIN = True
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'

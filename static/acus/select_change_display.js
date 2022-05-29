@@ -48,8 +48,8 @@ class SelectChangeDisplay {
     /**
      * 根据下拉选择框不同的值，显示或隐藏固定内容。
      *
-     * @param el {HTMLSelectElement}              监听目标
-     * @param option {...SelectOption}  显示/隐藏配置参数、不限数参数
+     * @param el {HTMLSelectElement}                监听目标
+     * @param option {...SelectOption}              显示/隐藏配置参数、不限数参数
      * @constructor
      */
     constructor(el, ...option) {
