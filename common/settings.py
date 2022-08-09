@@ -177,9 +177,6 @@ if DEBUG:
         os.path.join(BASE_DIR, 'static'),
     ]
 
-    # 是否记录登录 IP 并限制登录次数，开启后无法重新登录，需要在后台将登录标识设置为失效。
-    RECORD_LOGIN = False
-
 else:
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = utils.get_random_secret_key()
@@ -189,8 +186,6 @@ else:
     STATIC_URL = 'static/'
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-    # 是否记录登录 IP 并限制登录次数，开启后无法重新登录，需要在后台将登录标识设置为失效
-    RECORD_LOGIN = True
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'

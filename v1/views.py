@@ -64,8 +64,10 @@ class Login(AnonymousAPIView):
     @validate(validator=(CaptchaValidation, AuthenticationForm))
     def post(self, request, data: AuthenticationForm):
 
+        match = Match.objects.first()
+
         # 是否需要记录
-        if settings.RECORD_LOGIN:
+        if match.is_record_login():
             # 查找用户是否已经登录过
             try:
                 UserToken.objects.get(user=data.get_user(), status=False)
@@ -77,20 +79,24 @@ class Login(AnonymousAPIView):
 
         if request.user:
 
-            # 是否需要记录用户登录
-            if settings.RECORD_LOGIN:
-                x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-                if x_forwarded_for:
-                    ip = x_forwarded_for.split(',')[0]
-                else:
-                    ip = request.META.get('REMOTE_ADDR')
+            # 记录来源地址
+            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+            ip = list()
 
-                # 登录后生成 Token
-                user_token = UserToken()
-                user_token.generate()
-                user_token.user = request.user
-                user_token.ip = ip
-                user_token.save()
+            if x_forwarded_for:
+                ip.extend(x_forwarded_for.split(','))
+
+            ip.append(request.META.get('REMOTE_ADDR'))
+
+            # 登录后生成 Token
+            user_token = UserToken()
+            if match.is_start():
+                user_token.remark = "比赛开始后登录"
+            else:
+                user_token.remark = "比赛开始前登录"
+            user_token.user = request.user
+            user_token.ip = ", ".join(ip)
+            user_token.save()
 
             return self.success('登陆成功', data={
                 'token': request.session.session_key,

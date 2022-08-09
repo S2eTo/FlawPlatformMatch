@@ -93,6 +93,9 @@ class Match(BaseModels):
     logo = models.ImageField(upload_to='logo/%Y/%m', verbose_name="logo")
     start_datetime = models.DateTimeField(verbose_name="开始时间")
     end_datetime = models.DateTimeField(verbose_name="结束时间")
+    record_login = models.BooleanField(choices=((True, "限制比赛后登录行为"), (False, "不限制比赛后登录行为")),
+                                       help_text="开启限制时, 需要选手在比赛前登录, 比赛后无法登录. 如特殊情况需要再次登录的, 可以将选手登录状态改为失效。",
+                                       default=True, verbose_name="限制登录")
 
     class Meta:
         verbose_name = "比赛"
@@ -122,15 +125,19 @@ class Match(BaseModels):
 
         return self.is_start() and not self.is_end()
 
+    def is_record_login(self):
+        return self.record_login and self.is_start()
+
 
 class UserToken(BaseModels):
-    token = models.CharField(max_length=200, verbose_name="Token")
     user = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name="用户")
     ip = models.CharField(max_length=200, verbose_name="登录 IP")
     status = models.BooleanField(choices=(
         (False, "正常"),
         (True, "失效"),
-    ), default=False, help_text="设置为失效后, 就可以再次登录。 不需要删除数据，以多次登录IP判断是否作弊。", verbose_name="状态")
+    ), default=False, help_text="设置为失效后, 就可以再次登录。 不需要删除数据，以多次登录IP判断是否作弊。",
+        verbose_name="状态")
+    remark = models.CharField(max_length=200, verbose_name="备注")
 
     def __str__(self):
         return f"UserToken: {self.user}"
@@ -152,18 +159,5 @@ class UserToken(BaseModels):
     colored_name.short_description = "状态"
 
     class Meta:
-        verbose_name = "登录标识"
+        verbose_name = "选手登录状态"
         verbose_name_plural = verbose_name
-
-    def generate(self):
-        self.token = uuid.uuid4()
-
-
-# class UserRequestHistory(BaseModels):
-#     user = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name="用户")
-#     ip = models.CharField(max_length=200, verbose_name="IP")
-#     full_path = models.TextField(verbose_name="访问地址")
-#
-#     class Meta:
-#         verbose_name = "用户访问记录"
-#         verbose_name_plural = verbose_name

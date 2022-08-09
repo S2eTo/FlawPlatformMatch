@@ -380,8 +380,8 @@ class NoticeAdmin(admin.ModelAdmin):
 
 @admin.register(Match)
 class MatchAdmin(admin.ModelAdmin):
-    list_display = ('name', 'start_datetime', 'end_datetime')
-    search_fields = ('name',)
+    list_display = ('name', 'record_login', 'start_datetime', 'end_datetime')
+    search_fields = ('name', )
     change_list_template = "admin/match_change_list.html"
     list_filter = ('start_datetime', 'end_datetime', 'create_time', 'update_time')
 
@@ -519,25 +519,13 @@ class MatchAdmin(admin.ModelAdmin):
 
 @admin.register(UserToken)
 class UserTokenAdmin(admin.ModelAdmin):
-    list_display = ('user', 'token', 'ip', 'status', 'create_time', 'update_time')
+    list_display = ('user', 'ip', 'status', 'remark', 'create_time', 'update_time')
     list_editable = ('status',)
-    readonly_fields = ('user', 'token', 'create_time', 'update_time', 'colored_name', 'ip')
+    readonly_fields = ('user', 'remark', 'create_time', 'update_time', 'colored_name', 'ip')
     search_fields = ('user__username',)
     list_filter = ('create_time', 'update_time')
 
-    fields = ('user', 'token', 'colored_name', 'ip', 'create_time', 'update_time')
+    fields = ('user', 'remark', 'colored_name', 'ip', 'create_time', 'update_time')
 
     def has_add_permission(self, request):
         return False
-
-# @admin.register(UserRequestHistory)
-# class UserRequestHistoryAdmin(admin.ModelAdmin):
-#     list_display = ('user', 'ip', 'full_path','create_time', 'update_time')
-#     search_fields = ('user__username',)
-#     list_filter = ('create_time', 'update_time')
-#
-#     def has_add_permission(self, request):
-#         return False
-#
-#     def has_change_permission(self, request, obj=None):
-#         return False
