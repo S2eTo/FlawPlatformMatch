@@ -16,7 +16,7 @@
 
 ## 2.1 前端地址
 
-项目为前后端分离项目，前端仓库：https://gitee.com/J0hNs0N/FlawPlatformMatchVue
+项目为前后端分离项目，前端仓库：https://github.com/S2eTo/FlawPlatformMatchVue
 
 ## 2.2 安装 Python 3
 
