@@ -39,8 +39,8 @@ class Image(BaseModels):
                                   help_text="无法使用随机 Flag 时, 可以提前准备好固定 Flag 后在这里设置。")
     flag_file_path = models.CharField(max_length=255, blank=True, null=True, verbose_name="文件路径",
                                       help_text="程序会自动将随机生成flag，写入到填写的文件路径中。")
-    flag_file_format = models.TextField(verbose_name="文件内容模板", blank=True, null=True, default="{}",
-                                        help_text="文件内容的模板 ’{}‘ 为替换 flag 的位置。")
+    flag_file_format = models.TextField(verbose_name="文件内容模板", blank=True, null=True, default="{FLAG}",
+                                        help_text="文件内容的模板 ’{FLAG}‘ 为替换 flag 的位置。")
     file = models.FileField(upload_to="image_file/%Y/%m", blank=True, null=True, verbose_name="附件")
     file_flag = models.CharField(max_length=255, blank=True, null=True, verbose_name="附件 flag",
                                  help_text="指定附件中的flag值，用于校验（不会影响附件中的flag，所以需要提前在附件中准备flag）。")
@@ -99,12 +99,6 @@ class Image(BaseModels):
                     raise ValidationError(
                         field.error_messages['blank'],
                         code='blank',
-                    )
-
-                if value.find("'") != -1 or value.find('"') != -1:
-                    raise ValidationError(
-                        self.error_messages['invalid'],
-                        code='invalid',
                     )
 
         return value
