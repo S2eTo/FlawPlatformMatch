@@ -1,3 +1,5 @@
+import base64
+
 import docker
 from django.conf import settings
 from datetime import datetime, timedelta
@@ -35,8 +37,9 @@ class DockerApi(object):
             })
         elif flag_style == 2:
             container = self.client.containers.run(image_id, ports=ports, detach=True)
-            container.exec_run(
-                cmd='/bin/bash -c "echo -e \'{}\'>\'{}\'"'.format(flag_format.format(flag), flag_file_path))
+            file_content = base64.b64encode(flag_format.replace("{FLAG}", flag).encode())
+            cmd = f"/bin/bash -c \"echo '{file_content.decode()}' | base64 -d > '{flag_file_path}'\""
+            container.exec_run(cmd=cmd)
         elif flag_style == 3:
             container = self.client.containers.run(image_id, ports=ports, detach=True)
 
