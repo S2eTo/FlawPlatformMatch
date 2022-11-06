@@ -4,6 +4,8 @@
 
 特别说明, 本作品 前端[FlawPlatformMatchVue](https://github.com/S2eTo/FlawPlatformMatchVue), 后端[FlawPlatformMatch](https://github.com/S2eTo/FlawPlatformMatch)可开源使用，但必须免费提供使用。用于任何形式的商务/盈利活动，请提前联系交流群群主。
 
+靶机制作：[https://mp.weixin.qq.com/s/TCVf5XKW20uOc6WfV0QIQQ](https://mp.weixin.qq.com/s/TCVf5XKW20uOc6WfV0QIQQ)
+
 ## 1.1 软件简介
 
 基于 Docker, 使用 Python + Django 开发的在线 CTF 竞技平台。
