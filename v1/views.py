@@ -66,42 +66,48 @@ class Login(AnonymousAPIView):
 
         match = Match.objects.first()
 
-        # 是否需要记录
-        if match.is_record_login():
+        if match is not None:
             # 查找用户是否已经登录过
-            try:
-                UserToken.objects.get(user=data.get_user(), status=False)
-                return self.failed('登陆失败, 重复登录了！！！！！')
-            except UserToken.DoesNotExist:
-                pass
+            user: User = data.get_user()
+            # 是否需要记录
+            if match.is_record_login() and not user.is_superuser:
+                try:
+                    UserToken.objects.get(user=user, status=False)
+                    return self.failed('登陆失败, 重复登录了！！！！！')
+                except UserToken.DoesNotExist:
+                    pass
 
         login(request, user=data.get_user())
 
         if request.user:
 
-            # 记录来源地址
-            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-            ip = list()
+            if not request.user.is_superuser:
 
-            if x_forwarded_for:
-                ip.extend(x_forwarded_for.split(','))
+                # 记录来源地址
+                x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+                ip = list()
 
-            ip.append(request.META.get('REMOTE_ADDR'))
+                if x_forwarded_for:
+                    ip.extend(x_forwarded_for.split(','))
 
-            # 登录后生成 Token
-            user_token = UserToken()
-            if match.is_start():
-                user_token.remark = "比赛开始后登录"
-            else:
-                user_token.remark = "比赛开始前登录"
-            user_token.user = request.user
-            user_token.ip = ", ".join(ip)
-            user_token.save()
+                ip.append(request.META.get('REMOTE_ADDR'))
+
+                # 登录后生成 Token
+                user_token = UserToken()
+                if match.is_start():
+                    user_token.remark = "比赛开始后登录"
+                else:
+                    user_token.remark = "比赛开始前登录"
+
+                user_token.user = request.user
+                user_token.ip = ", ".join(ip)
+                user_token.save()
 
             return self.success('登陆成功', data={
                 'token': request.session.session_key,
                 'user': UserSerializer(request.user).data
             })
+
         return self.failed('登陆失败, 是不是忘记报名了呢！')
 
 
@@ -214,8 +220,10 @@ class RunContainer(UserAPIView, CheckPostPermissionsAPIView):
         container.user = request.user
         container.save()
 
-        return self.success("启动成功！", data={'container': ContainerSerializer(container).data,
-                                           'remaining_time': settings.DOCKER_API.get('AUTO_REMOVE_CONTAINER')})
+        return self.success("启动成功！", data={
+            'container': ContainerSerializer(container).data,
+            'remaining_time': settings.DOCKER_API.get('AUTO_REMOVE_CONTAINER')
+        })
 
 
 class GetRunningContainer(UserAPIView, CheckGetPermissionsAPIView):
@@ -226,8 +234,11 @@ class GetRunningContainer(UserAPIView, CheckGetPermissionsAPIView):
     def get(self, request):
         try:
             container = Container.objects.get(user=request.user)
-            return self.success('获取成功', data={'container': ContainerSerializer(container).data,
-                                              'remaining_time': settings.DOCKER_API.get('AUTO_REMOVE_CONTAINER')})
+            return self.success('获取成功', data={
+                'container': ContainerSerializer(container).data,
+                'remaining_time': settings.DOCKER_API.get('AUTO_REMOVE_CONTAINER')
+            })
+
         except Container.DoesNotExist:
             return self.success('获取成功', data={'container': None})
 
